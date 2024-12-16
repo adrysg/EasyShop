@@ -111,7 +111,7 @@ public class CategoriesController {
         // update the category by id
         try
         {
-            categoryDao.create(category);
+            categoryDao.update(id, category);
         }
         catch(Exception ex)
         {
