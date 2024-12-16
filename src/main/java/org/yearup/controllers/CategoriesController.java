@@ -23,7 +23,7 @@ import java.util.List;
 @RestController
 // add the annotation to make this controller the endpoint for the following url
     // http://localhost:8080/categories
-@RequestMapping("/categories")
+@RequestMapping("categories")
 // add annotation to allow cross site origin requests
 @CrossOrigin
 public class CategoriesController {
@@ -40,16 +40,16 @@ public class CategoriesController {
 
 
     // add the appropriate annotation for a get action
-    @GetMapping("/categories")
+    @GetMapping
     @PreAuthorize("permitAll()")
     public List<Category> getAll() {
         // find and return all categories
-        try {
-            categoryDao.getAllCategories();
+        try
+        {
+           return categoryDao.getAllCategories();
         } catch (Exception e) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }
-        return getAll();
     }
 
     // add the appropriate annotation for a get action
@@ -59,13 +59,12 @@ public class CategoriesController {
         // get the category by id
         try
         {
-            categoryDao.getById(id);
+           return categoryDao.getById(id);
         }
         catch (Exception ex)
         {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
         }
-        return getById(id);
     }
 
     // the url to return all products in category 1 would look like this
@@ -76,13 +75,12 @@ public class CategoriesController {
         // get a list of product by categoryId
         try
         {
-            productDao.listByCategoryId(categoryId);
+           return productDao.listByCategoryId(categoryId);
         }
         catch (Exception ex)
         {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
         }
-        return getProductsById(categoryId);
     }
 
     // add annotation to call this method for a POST action
