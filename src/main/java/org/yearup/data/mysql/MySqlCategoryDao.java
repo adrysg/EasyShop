@@ -51,16 +51,19 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
         Category category = null;
         try(Connection connection = getConnection();
             PreparedStatement pStatement = connection.prepareStatement("""
-                    SELECT *
+                    SELECT category_id, name, description
                     FROM categories
-                    WHERE category_id = ?;""");
-            ResultSet results = pStatement.executeQuery())
+                    WHERE category_id = ?;"""))
         {
-            while (results.next()){
-                int id = results.getInt(1);
-                String categoryName = results.getString("name");
-                String description = results.getString("description");
-                category = (new Category(id, categoryName, description));
+            pStatement.setInt(1, categoryId);
+           try ( ResultSet results = pStatement.executeQuery())
+            {
+                if (results.next()) {
+                    int id = results.getInt("category_id");
+                    String categoryName = results.getString("name");
+                    String description = results.getString("description");
+                    category = new Category(id, categoryName, description);
+                }
             }
         } catch (SQLException e){
             throw new RuntimeException(e);
