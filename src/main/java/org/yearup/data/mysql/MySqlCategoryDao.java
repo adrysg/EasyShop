@@ -32,7 +32,7 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
                     ResultSet results = pStatement.executeQuery())
                 {
                     while (results.next()){
-                        int categoryId = results.getInt(1);
+                        int categoryId = results.getInt("category_id");
                         String categoryName = results.getString("name");
                         String description = results.getString("description");
                         categories.add(new Category(categoryId, categoryName, description));
@@ -64,7 +64,9 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
                     String description = results.getString("description");
                     category = new Category(id, categoryName, description);
                 }
+
             }
+
         } catch (SQLException e){
             throw new RuntimeException(e);
         }
@@ -72,20 +74,28 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
     }
 
     @Override
-    public Category create(Category category)
-    {
-        // create a new category
-        try(Connection connection = getConnection();
-            PreparedStatement pStatement = connection.prepareStatement("""
-                    INSERT INTO categories
-                    (name, description)
-                    VALUES (?, ?);"""))
-        {
-           pStatement.setString(1, category.getName());
-           pStatement.setString(2, category.getDescription());
-           pStatement.executeUpdate();
-        } catch (SQLException e){
-            throw new RuntimeException(e);
+    public Category create(Category category) {
+        String sql = """
+        INSERT INTO categories (name, description)
+        VALUES (?, ?)
+        """;
+
+        try (Connection connection = getConnection();
+             PreparedStatement query = connection.prepareStatement(sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
+
+            query.setString(1, category.getName());
+            query.setString(2, category.getDescription());
+
+            query.executeUpdate();
+
+            try (ResultSet generatedKeys = query.getGeneratedKeys()) {
+                if (generatedKeys.next()) {
+                    category.setCategoryId(generatedKeys.getInt(1)); // Set the generated ID to the category
+                }
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error creating category", e);
         }
         return category;
     }
@@ -104,6 +114,7 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
             pStatement.setString(2, category.getDescription());
             pStatement.setInt(3, categoryId);
             pStatement.executeUpdate();
+
         } catch (SQLException e){
             throw new RuntimeException(e);
         }

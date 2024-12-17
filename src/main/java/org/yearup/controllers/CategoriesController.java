@@ -27,16 +27,20 @@ import java.util.List;
 // add annotation to allow cross site origin requests
 @CrossOrigin
 public class CategoriesController {
+
+    @Autowired
     private CategoryDao categoryDao;
+
+    @Autowired
     private ProductDao productDao;
 
 
     // create an Autowired controller to inject the categoryDao and ProductDao
-    @Autowired
-    public CategoriesController(CategoryDao categoryDao, ProductDao productDao) {
-        this.categoryDao = categoryDao;
-        this.productDao = productDao;
-    }
+//    @Autowired
+//    public CategoriesController(CategoryDao categoryDao, ProductDao productDao) {
+//        this.categoryDao = categoryDao;
+//        this.productDao = productDao;
+//    }
 
 
     // add the appropriate annotation for a get action
@@ -52,17 +56,25 @@ public class CategoriesController {
     }
 
     // add the appropriate annotation for a get action
-    @GetMapping("{id}")
+    @GetMapping("/{id}")
     @PreAuthorize("permitAll()")
     public Category getById(@PathVariable int id) {
         // get the category by id
         try {
-            Category category = categoryDao.getById(id);
-            return category;
+            Category category = categoryDao.getById(id) ;
+            System.out.println(category + " Category Dao");
+            if (category == null) {
+
+                throw new ResponseStatusException(HttpStatus.NOT_FOUND);
+
+            } else {
+                return category;
+            }
 
         } catch (Exception ex) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
         }
+
     }
 
     // the url to return all products in category 1 would look like this
@@ -82,6 +94,7 @@ public class CategoriesController {
     // add annotation to ensure that only an ADMIN can call this function
     @PostMapping()
     @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @ResponseStatus(value = HttpStatus.CREATED)
     public Category addCategory(@RequestBody Category category) {
         // insert the category
         try {
@@ -107,8 +120,9 @@ public class CategoriesController {
 
     // add annotation to call this method for a DELETE action - the url path must include the categoryId
     // add annotation to ensure that only an ADMIN can call this function
-    @DeleteMapping("{id}")
+    @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
     public void deleteCategory(@PathVariable int id) {
         // delete the category by id
         try {
