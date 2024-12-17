@@ -55,8 +55,8 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
                     FROM categories
                     WHERE category_id = ?;"""))
         {
-            pStatement.setInt(1, categoryId);
-           try ( ResultSet results = pStatement.executeQuery())
+           pStatement.setInt(1, categoryId);
+           ResultSet results = pStatement.executeQuery();
             {
                 if (results.next()) {
                     int id = results.getInt("category_id");
@@ -64,9 +64,7 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
                     String description = results.getString("description");
                     category = new Category(id, categoryName, description);
                 }
-
             }
-
         } catch (SQLException e){
             throw new RuntimeException(e);
         }

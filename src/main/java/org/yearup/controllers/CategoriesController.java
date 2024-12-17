@@ -60,20 +60,17 @@ public class CategoriesController {
     @PreAuthorize("permitAll()")
     public Category getById(@PathVariable int id) {
         // get the category by id
-        try {
-            Category category = categoryDao.getById(id) ;
-            System.out.println(category + " Category Dao");
-            if (category == null) {
+
+           List<Category> allCategories = categoryDao.getAllCategories();
+            for(Category cat: allCategories) {
+
+                 if (cat.getCategoryId() == id) {
+                     return cat;
+                   }
+                }
 
                 throw new ResponseStatusException(HttpStatus.NOT_FOUND);
 
-            } else {
-                return category;
-            }
-
-        } catch (Exception ex) {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
-        }
 
     }
 
