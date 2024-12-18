@@ -24,23 +24,23 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
     @Override
     public List<Category> getAllCategories()
     {
-                List<Category> categories = new ArrayList<>();
+        List<Category> categories = new ArrayList<>();
 
-                try(Connection connection = getConnection();
-                    PreparedStatement pStatement = connection.prepareStatement("""
+        try(Connection connection = getConnection();
+            PreparedStatement pStatement = connection.prepareStatement("""
                     SELECT * FROM categories;""");
-                    ResultSet results = pStatement.executeQuery())
-                {
-                    while (results.next()){
-                        int categoryId = results.getInt("category_id");
-                        String categoryName = results.getString("name");
-                        String description = results.getString("description");
-                        categories.add(new Category(categoryId, categoryName, description));
-                    }
-                } catch (SQLException e){
-                    throw new RuntimeException(e);
-                }
-                return categories;
+            ResultSet results = pStatement.executeQuery())
+        {
+            while (results.next()){
+                int categoryId = results.getInt("category_id");
+                String categoryName = results.getString("name");
+                String description = results.getString("description");
+                categories.add(new Category(categoryId, categoryName, description));
+            }
+        } catch (SQLException e){
+            throw new RuntimeException(e);
+        }
+        return categories;
 
     }
 
@@ -55,8 +55,8 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
                     FROM categories
                     WHERE category_id = ?;"""))
         {
-           pStatement.setInt(1, categoryId);
-           ResultSet results = pStatement.executeQuery();
+            pStatement.setInt(1, categoryId);
+            ResultSet results = pStatement.executeQuery();
             {
                 if (results.next()) {
                     int id = results.getInt("category_id");
@@ -127,8 +127,8 @@ public class MySqlCategoryDao extends MySqlDaoBase implements CategoryDao
                     DELETE FROM categories
                     WHERE category_id = ?;"""))
         {
-           pStatement.setInt(1, categoryId);
-           pStatement.executeUpdate();
+            pStatement.setInt(1, categoryId);
+            pStatement.executeUpdate();
         } catch (SQLException e){
             throw new RuntimeException(e);
         }
