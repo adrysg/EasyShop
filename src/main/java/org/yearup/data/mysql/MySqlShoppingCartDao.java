@@ -15,6 +15,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Component
 public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDao
@@ -29,7 +30,7 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
         List<ShoppingCartItem> items = new ArrayList<>();
 
         try(Connection connection = getConnection();
-         PreparedStatement pStatement = connection.prepareStatement("""
+            PreparedStatement pStatement = connection.prepareStatement("""
                     SELECT * FROM shopping_cart
                     WHERE user_id = ?;""")){
 
@@ -37,9 +38,9 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
             ResultSet results = pStatement.executeQuery();
 
             while (results.next()){
-               int productId = results.getInt("product_id");
-               int quantity = results.getInt("quantity");
-               items.add(new ShoppingCartItem(productId, quantity));
+                int productId = results.getInt("product_id");
+                int quantity = results.getInt("quantity");
+                items.add(new ShoppingCartItem(productId, quantity));
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -49,6 +50,24 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
 
     @Override
     public void addItem(int userId, int productId, int quantity) {
+        BigDecimal productPrice = null;
+        try(Connection connection = getConnection();
+            PreparedStatement pStatement = connection.prepareStatement("""
+                    SELECT price FROM products
+                    WHERE product_id = ?;"""))
+        {
+            pStatement.setInt(1, productId);
+            ResultSet results = pStatement.executeQuery();
+
+            if (results.next()){
+                productPrice = results.getBigDecimal("price");
+            }
+            else {
+                throw new RuntimeException();
+            }
+        } catch (SQLException e){
+            throw new RuntimeException(e);
+        }
 
         //adding items into cart
         try(Connection connection = getConnection();
@@ -59,6 +78,7 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
             pStatement.setInt(1, userId);
             pStatement.setInt(2, productId);
             pStatement.setInt(3, quantity);
+            pStatement.setBigDecimal(4, productPrice);
             pStatement.executeUpdate();
 
         } catch (SQLException e){
@@ -68,8 +88,7 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
     }
 
     @Override
-    public void updateCart(int userId, int productId, int quantity) {
-
+    public void updateCart(int userId, int productId, int quantity, BigDecimal discountPercent) {
         //update items in cart
         try(Connection connection = getConnection();
             PreparedStatement pStatement = connection.prepareStatement("""
@@ -77,6 +96,7 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
                     WHERE user_id = ?, AND product_id = ?;"""))
         {
             pStatement.setInt(1, quantity);
+            pStatement.setBigDecimal(2, discountPercent);
             pStatement.setInt(2, userId);
             pStatement.setInt(3, productId);
             pStatement.executeUpdate();
@@ -84,11 +104,6 @@ public class MySqlShoppingCartDao extends MySqlDaoBase implements ShoppingCartDa
         } catch (SQLException e){
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public void updateCart(int userId, int productId, int quantity, BigDecimal discountPercent) {
-
     }
 
     @Override

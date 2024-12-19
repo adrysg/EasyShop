@@ -1,6 +1,5 @@
 package org.yearup.controllers;
 
-import jdk.jfr.Registered;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
@@ -60,12 +59,11 @@ public class ShoppingCartController
 
     // add a POST method to add a product to the cart - the url should be
     // https://localhost:8080/cart/products/15 (15 is the productId to be added
-    @PostMapping("/products/add")
-    public void addToCart(Principal principal){
+    @PostMapping("/products/{productId}")
+    public void addToCart(@PathVariable int productId, Principal principal){
         try {
             User user = validateUser(principal);
             int userId = user.getId();
-            int productId = 15;
             int quantity = 1;
 
             shoppingCartDao.addItem(userId, productId, quantity);
@@ -116,6 +114,10 @@ public class ShoppingCartController
             throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
         String username = principal.getName();
+        User user = userDao.getByUserName(username);
+        if (user == null){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        }
         return userDao.getByUserName(username);
     }
 }
