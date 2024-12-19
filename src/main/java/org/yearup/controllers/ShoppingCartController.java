@@ -53,7 +53,7 @@ public class ShoppingCartController
         }
         catch(Exception e)
         {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
     }
 
@@ -70,7 +70,7 @@ public class ShoppingCartController
         }
         catch(Exception e)
         {
-            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
         }
     }
 
@@ -95,7 +95,7 @@ public class ShoppingCartController
     // add a DELETE method to clear all products from the current users cart
     // https://localhost:8080/cart
     @DeleteMapping("/cart")
-    public void removeItems(@PathVariable int productId, Principal principal){
+    public void removeItems(Principal principal){
         try {
             User user = validateUser(principal);
             int userId = user.getId();
