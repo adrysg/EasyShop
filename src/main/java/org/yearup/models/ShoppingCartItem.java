@@ -6,10 +6,22 @@ import java.math.BigDecimal;
 
 public class ShoppingCartItem
 {
+    private int productId;
     private Product product = null;
     private int quantity = 1;
     private BigDecimal discountPercent = BigDecimal.ZERO;
 
+    public ShoppingCartItem(int productId, Product product, int quantity, BigDecimal discountPercent) {
+        this.productId = productId;
+        this.product = product;
+        this.quantity = quantity;
+        this.discountPercent = discountPercent;
+    }
+
+    public ShoppingCartItem(int productId, int quantity) {
+        this.productId = productId;
+        this.quantity = quantity;
+    }
 
     public Product getProduct()
     {

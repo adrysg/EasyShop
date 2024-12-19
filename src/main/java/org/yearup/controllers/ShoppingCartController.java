@@ -21,6 +21,7 @@ import java.util.Map;
 @RestController
 // only logged in users should have access to these actions
 @RequestMapping("/cart")
+@CrossOrigin
 public class ShoppingCartController
 {
     // a shopping cart requires
@@ -37,15 +38,11 @@ public class ShoppingCartController
     @GetMapping
     public Map<String, Object> getCart(Principal principal)
     {
-        if (principal == null){
-            throw new RuntimeException("Please log in to access shopping cart");
-        }
-        try
-        {
+        try {
+            User user = validateUser(principal);
             // get the currently logged in username
             String userName = principal.getName();
             // find database user by userId
-            User user = userDao.getByUserName(userName);
             int userId = user.getId();
             // use the ShoppingCartDao to get all items in the cart and return the cart
             ShoppingCart cart = shoppingCartDao.getByUserId(userId);
@@ -65,16 +62,13 @@ public class ShoppingCartController
     // https://localhost:8080/cart/products/15 (15 is the productId to be added
     @PostMapping("/products/add")
     public void addToCart(Principal principal){
-        if (principal == null){
-            throw new RuntimeException("Please log in to add items to cart");
-        }
         try {
-            String username = principal.getName();
-            User user = userDao.getByUserName(username);
+            User user = validateUser(principal);
             int userId = user.getId();
             int productId = 15;
+            int quantity = 1;
 
-            shoppingCartDao.addItem(userId, productId);
+            shoppingCartDao.addItem(userId, productId, quantity);
         }
         catch(Exception e)
         {
@@ -88,13 +82,10 @@ public class ShoppingCartController
     // the BODY should be a ShoppingCartItem - quantity is the only value that will be updated
     @PutMapping("/products/{productId}")
     public void updateCart(@PathVariable int productId, @RequestBody ShoppingCartItem shoppingCartItem, Principal principal) {
-        if (principal == null) {
-            throw new RuntimeException("Please log in to update items in cart");
-        }
         try {
-            String username = principal.getName();
-            User user = userDao.getByUserName(username);
+            User user = validateUser(principal);
             int userId = user.getId();
+
 
             shoppingCartDao.updateCart(userId, productId, shoppingCartItem.getQuantity(), shoppingCartItem.getDiscountPercent());
         }
@@ -107,12 +98,8 @@ public class ShoppingCartController
     // https://localhost:8080/cart
     @DeleteMapping("/cart")
     public void removeItems(@PathVariable int productId, Principal principal){
-        if (principal == null){
-            throw new RuntimeException("Please log in to delete items from cart");
-        }
         try {
-            String username = principal.getName();
-            User user = userDao.getByUserName(username);
+            User user = validateUser(principal);
             int userId = user.getId();
 
             shoppingCartDao.removeAllItems(userId);
@@ -121,5 +108,14 @@ public class ShoppingCartController
         {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Oops... our bad.");
         }
+    }
+
+    //helper method to validate user is logged in
+    private User validateUser (Principal principal){
+        if (principal == null){
+            throw new ResponseStatusException(HttpStatus.UNAUTHORIZED);
+        }
+        String username = principal.getName();
+        return userDao.getByUserName(username);
     }
 }
